@@ -21,8 +21,34 @@ class DownloadController extends Controller
     	$result = curl_exec($curl);
     	curl_close($curl);
 
-    	$result = json_encode($result);
+    	if (request()->has('download') && request()->download == true) {
+    		$result = json_decode($result, true);
 
-    	return view('download.index', compact('result'));
+		    $filename ='Users.csv';
+			header('Content-Type: text/csv; charset=utf-8');
+			Header('Content-Type: application/force-download');
+			header('Content-Disposition: attachment; filename='.$filename.'');
+			
+			$output = fopen('php://output', 'w');
+			fputcsv($output, ['User ID', 'Email', 'First Name', 'Last Name', 'Mobile']);
+
+		    foreach($result['data'] as $res){
+		        fputcsv($output, [
+		        	$res['uid'], 
+		        	$res['email'], 
+		        	$res['first_name'], 
+		        	$res['last_name'], 
+		        	$res['mobile']
+		        ]);
+		    }
+		    
+			fclose($output);
+
+    	} else{
+	    	$result = json_encode($result);
+
+	    	return view('download.index', compact('result'));
+    	}
+
     }
 }

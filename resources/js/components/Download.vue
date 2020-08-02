@@ -6,7 +6,7 @@
 
                     <div class="card-body">
                         <caption>
-                            <button class="btn btn-success" @click.prevent="download">Download CSV</button>
+                            <button class="btn btn-success" @click.prevent="download">Download</button>
                         </caption>
                         <table class="table table-bordered">
                             <thead>
@@ -47,19 +47,18 @@
 
         methods: {
             download() {
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += [
-                Object.keys(this.parsed_result).join(";"),
-                ...this.parsed_result.map(item => Object.values(item).join(";"))
-                ]
-                .join("\n")
-                .replace(/(^\[)|(\]$)/gm, "");
-
-                const data = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", data);
-                link.setAttribute("download", "export.csv");
-                link.click();
+                axios.get('/download-csv', {
+                    params: {
+                        download: true
+                    }
+                }).then(({data}) => {
+                    const url = window.URL.createObjectURL(new Blob([data]));
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'users.csv');
+                    document.body.appendChild(link);
+                    link.click()
+                });
             }
         }
     }
